@@ -1,13 +1,15 @@
-package user_service
+package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
+	"os"
 	"pizza/service"
-	pb "pizza/service"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -18,31 +20,36 @@ import (
 var client *mongo.Client
 
 type server struct {
-	pb.UnimplementedUserServiceServer
+	service.UnimplementedUserServiceServer
 }
 
-func (s *server) Register(context.Context, *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+//func (s *server) Register(context.Context, *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 
-}
+//}
 
 func baza() {
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
 	clientOptions := options.Client().
-		ApplyURI("mongodb+srv://indetensai:<password>@cluster0.wzkqiif.mongodb.net/?retryWrites=true&w=majority").
+		ApplyURI(os.Getenv("USER_SERVICE_DATABASE")).
 		SetServerAPIOptions(serverAPIOptions)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, clientOptions)
+	var err error
+	client, err = mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
-	client.Ping(context.Background(), readpref.Primary())
+	err = client.Ping(context.Background(), readpref.Primary())
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func main() {
+	godotenv.Load()
+	a := (os.Getenv("USER_SERVICE_DATABASE"))
+	fmt.Println(a)
+	baza()
 	ln, err := net.Listen("tcp", ":443")
 	if err != nil {
 		log.Fatal(err)
