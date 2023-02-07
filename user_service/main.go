@@ -10,22 +10,47 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
-var client *mongo.Client
+var db *mongo.Client
 
 type server struct {
 	service.UnimplementedUserServiceServer
 }
 
-//func (s *server) Register(context.Context, *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+func (s *server) Register(
+	ctx context.Context,
+	request *service.RegisterRequest,
+) (*service.RegisterResponse, error) {
+	username := request.GetUsername()
+	password := request.GetPassword()
+	check := db.Database("user_service").Collection("users").FindOne(
+		ctx,
+		bson.D{{Key: "username", Value: username}},
+		nil,
+	)
+	if check != nil {
+		return nil, status.Error(codes.AlreadyExists, "username already taken")
+	}
+	_, err := db.Database("user_service").Collection("users").InsertOne(
+		ctx,
+		bson.D{{Key: "username", Value: username}, {Key: "password", Value: password}},
+		nil,
+	)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &service.RegisterResponse{}, nil
 
-//}
+}
 
 func baza() {
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
@@ -35,11 +60,11 @@ func baza() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	var err error
-	client, err = mongo.Connect(ctx, clientOptions)
+	db, err = mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = client.Ping(context.Background(), readpref.Primary())
+	err = db.Ping(context.Background(), readpref.Primary())
 	if err != nil {
 		log.Fatal(err)
 	}
