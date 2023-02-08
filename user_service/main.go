@@ -32,21 +32,13 @@ func (s *server) Register(
 ) (*service.RegisterResponse, error) {
 	username := request.GetUsername()
 	password := request.GetPassword()
-	check := db.Database("user_service").Collection("users").FindOne(
-		ctx,
-		bson.D{{Key: "username", Value: username}},
-		nil,
-	)
-	if check != nil {
-		return nil, status.Error(codes.AlreadyExists, "username already taken")
-	}
 	_, err := db.Database("user_service").Collection("users").InsertOne(
 		ctx,
 		bson.D{{Key: "username", Value: username}, {Key: "password", Value: password}},
 		nil,
 	)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "username already exists")
 	}
 	return &service.RegisterResponse{}, nil
 
@@ -65,6 +57,17 @@ func baza() {
 		log.Fatal(err)
 	}
 	err = db.Ping(context.Background(), readpref.Primary())
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = db.Database("user_service").Collection("users").Indexes().CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys:    bson.D{{Key: "username", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+		nil,
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
