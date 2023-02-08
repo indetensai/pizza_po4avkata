@@ -38,7 +38,7 @@ func (s *server) Register(
 		nil,
 	)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "username already exists")
+		return nil, status.Error(codes.AlreadyExists, "username already exists")
 	}
 	return &service.RegisterResponse{}, nil
 
