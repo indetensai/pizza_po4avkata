@@ -10,18 +10,23 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var client service.UserServiceClient
+
 func register_handler(c *fiber.Ctx) error {
 	_, err := client.Register(c.Context(), &service.RegisterRequest{
 		Username: c.FormValue("username"),
 		Password: c.FormValue("password"),
 	})
 	e, _ := status.FromError(err)
-	if e.Code() == codes.AlreadyExists {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"note": "username already exists",
-		})
+	if err != nil {
+		if e.Code() == codes.AlreadyExists {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"note": "username already exists",
+			})
+		}
+		return err
 	}
-	return err
+	return c.SendStatus(fiber.StatusOK)
 }
 
 var client service.UserServiceClient
