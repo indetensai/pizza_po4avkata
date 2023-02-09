@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -31,10 +32,14 @@ func (s *server) Register(
 	request *service.RegisterRequest,
 ) (*service.RegisterResponse, error) {
 	username := request.GetUsername()
-	password := request.GetPassword()
-	_, err := db.Database("user_service").Collection("users").InsertOne(
+	password := []byte(request.GetPassword())
+	password, err := bcrypt.GenerateFromPassword(password, 10)
+	if err != nil {
+		return nil, err
+	}
+	_, err = db.Database("user_service").Collection("users").InsertOne(
 		ctx,
-		bson.D{{Key: "username", Value: username}, {Key: "password", Value: password}},
+		bson.D{{Key: "username", Value: username}, {Key: "password", Value: string(password)}},
 		nil,
 	)
 	if err != nil {

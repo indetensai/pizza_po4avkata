@@ -6,10 +6,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func register_handler(c *fiber.Ctx) error {
-	_, err := client.Register(c.Context(), &service.RegisterRequest{Username: c.FormValue("username"), Password: c.FormValue("password")})
+	_, err := client.Register(c.Context(), &service.RegisterRequest{
+		Username: c.FormValue("username"),
+		Password: c.FormValue("password"),
+	})
+	e, _ := status.FromError(err)
+	if e.Code() == codes.AlreadyExists {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"note": "username already exists",
+		})
+	}
 	return err
 }
 
