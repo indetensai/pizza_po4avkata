@@ -6,17 +6,50 @@ message RegisterRequest{
     string username = 1;
     string password = 2;
 }
+
 message RegisterResponse{
     
 }
+
 message LoginRequest{
     string username = 1;
     string password = 2;
 }
+
 message LoginResponse{
     string session = 1;
 }
+
+
+message Pizza{
+    string name = 1;
+    string description = 2;
+    repeated string ingredients = 3;
+    map<string, int64> prices = 4;
+}
+
+message MenuRequest{
+
+}
+
+message MenuResponse{
+    repeated Pizza menu = 1;
+}
+
+message PizzaCreatingRequest{
+    Pizza content = 1;
+}
+
+message PizzaCreatingResponse{
+
+}
+
 service UserService{
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
+}
+
+service MenuService{
+    rpc GetMenu(MenuRequest) returns (MenuResponse);
+    rpc CreatePizza(PizzaCreatingRequest) returns (PizzaCreatingResponse);
 }

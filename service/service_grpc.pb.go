@@ -139,3 +139,125 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "service.proto",
 }
+
+// MenuServiceClient is the client API for MenuService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type MenuServiceClient interface {
+	GetMenu(ctx context.Context, in *MenuRequest, opts ...grpc.CallOption) (*MenuResponse, error)
+	CreatePizza(ctx context.Context, in *PizzaCreatingRequest, opts ...grpc.CallOption) (*PizzaCreatingResponse, error)
+}
+
+type menuServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewMenuServiceClient(cc grpc.ClientConnInterface) MenuServiceClient {
+	return &menuServiceClient{cc}
+}
+
+func (c *menuServiceClient) GetMenu(ctx context.Context, in *MenuRequest, opts ...grpc.CallOption) (*MenuResponse, error) {
+	out := new(MenuResponse)
+	err := c.cc.Invoke(ctx, "/MenuService/GetMenu", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *menuServiceClient) CreatePizza(ctx context.Context, in *PizzaCreatingRequest, opts ...grpc.CallOption) (*PizzaCreatingResponse, error) {
+	out := new(PizzaCreatingResponse)
+	err := c.cc.Invoke(ctx, "/MenuService/CreatePizza", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// MenuServiceServer is the server API for MenuService service.
+// All implementations must embed UnimplementedMenuServiceServer
+// for forward compatibility
+type MenuServiceServer interface {
+	GetMenu(context.Context, *MenuRequest) (*MenuResponse, error)
+	CreatePizza(context.Context, *PizzaCreatingRequest) (*PizzaCreatingResponse, error)
+	mustEmbedUnimplementedMenuServiceServer()
+}
+
+// UnimplementedMenuServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedMenuServiceServer struct {
+}
+
+func (UnimplementedMenuServiceServer) GetMenu(context.Context, *MenuRequest) (*MenuResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMenu not implemented")
+}
+func (UnimplementedMenuServiceServer) CreatePizza(context.Context, *PizzaCreatingRequest) (*PizzaCreatingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePizza not implemented")
+}
+func (UnimplementedMenuServiceServer) mustEmbedUnimplementedMenuServiceServer() {}
+
+// UnsafeMenuServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MenuServiceServer will
+// result in compilation errors.
+type UnsafeMenuServiceServer interface {
+	mustEmbedUnimplementedMenuServiceServer()
+}
+
+func RegisterMenuServiceServer(s grpc.ServiceRegistrar, srv MenuServiceServer) {
+	s.RegisterService(&MenuService_ServiceDesc, srv)
+}
+
+func _MenuService_GetMenu_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MenuRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MenuServiceServer).GetMenu(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/MenuService/GetMenu",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MenuServiceServer).GetMenu(ctx, req.(*MenuRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MenuService_CreatePizza_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PizzaCreatingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MenuServiceServer).CreatePizza(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/MenuService/CreatePizza",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MenuServiceServer).CreatePizza(ctx, req.(*PizzaCreatingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// MenuService_ServiceDesc is the grpc.ServiceDesc for MenuService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var MenuService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "MenuService",
+	HandlerType: (*MenuServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetMenu",
+			Handler:    _MenuService_GetMenu_Handler,
+		},
+		{
+			MethodName: "CreatePizza",
+			Handler:    _MenuService_CreatePizza_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "service.proto",
+}
