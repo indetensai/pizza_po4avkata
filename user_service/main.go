@@ -85,10 +85,10 @@ func (s *server) Login(
 		nil,
 	).Decode(&result)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.NotFound, "invalid username or password")
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(password))
-	if err != nil {
+	if err != nil || result.Username == "" {
 		return nil, status.Error(codes.Unauthenticated, "invalid username or password")
 	}
 	session_id, err := GenerateRandomString(64)
