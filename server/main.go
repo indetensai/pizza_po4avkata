@@ -10,10 +10,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var client service.UserServiceClient
+var user_service service.UserServiceClient
+var menu_service service.MenuServiceClient
 
 func register_handler(c *fiber.Ctx) error {
-	_, err := client.Register(c.Context(), &service.RegisterRequest{
+	_, err := user_service.Register(c.Context(), &service.RegisterRequest{
 		Username: c.FormValue("username"),
 		Password: c.FormValue("password"),
 	})
@@ -30,7 +31,7 @@ func register_handler(c *fiber.Ctx) error {
 }
 
 func login_handler(c *fiber.Ctx) error {
-	session_id, err := client.Login(c.Context(), &service.LoginRequest{
+	session_id, err := user_service.Login(c.Context(), &service.LoginRequest{
 		Username: c.FormValue("username"),
 		Password: c.FormValue("password"),
 	})
@@ -46,15 +47,29 @@ func login_handler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"session_id": session_id.Session})
 }
 
+func get_menu_handler(c *fiber.Ctx) error {
+	pizza, err := menu_service.GetMenu(c.Context(), &service.MenuRequest{})
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"pizzas": pizza.Menu})
+}
+
 func main() {
 	app := fiber.New()
 	app.Post("/user/register", register_handler)
 	app.Post("user/login", login_handler)
+	app.Post("menu/get", get_menu_handler)
 	conn, err := grpc.Dial("localhost:443", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}
-	client = service.NewUserServiceClient(conn)
+	user_service = service.NewUserServiceClient(conn)
+	connd, err := grpc.Dial("localhost:50001", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	menu_service = service.NewMenuServiceClient(connd)
 	app.Listen(":8080")
 
 }
