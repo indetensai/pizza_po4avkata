@@ -46,6 +46,26 @@ func (s *server) CreatePizza(
 	return &service.PizzaCreatingResponse{}, nil
 }
 
+func (s *server) GetMenu(
+	ctx context.Context,
+	request *service.MenuRequest,
+) (*service.MenuResponse, error) {
+	source, err := db.Database("menu_service").Collection("pizza").Find(
+		ctx,
+		bson.D{{}},
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	var result []*service.Pizza
+	err = source.All(ctx, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &service.MenuResponse{Menu: result}, nil
+}
+
 func baza() {
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
 	clientOptions := options.Client().
