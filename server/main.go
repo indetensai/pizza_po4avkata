@@ -31,7 +31,7 @@ func register_handler(c *fiber.Ctx) error {
 }
 
 func login_handler(c *fiber.Ctx) error {
-	session_id, err := user_service.Login(c.Context(), &service.LoginRequest{
+	session, err := user_service.Login(c.Context(), &service.LoginRequest{
 		Username: c.FormValue("username"),
 		Password: c.FormValue("password"),
 	})
@@ -44,7 +44,7 @@ func login_handler(c *fiber.Ctx) error {
 		}
 		return err
 	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"session_id": session_id.SessionId})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"session": session.Session})
 }
 
 func get_menu_handler(c *fiber.Ctx) error {

@@ -31,9 +31,9 @@ type server struct {
 }
 
 type Session struct {
-	ID        primitive.ObjectID `bson:"_id"`
-	Username  string             `bson:"username"`
-	SessionId string             `bson:"session_id"`
+	ID       primitive.ObjectID `bson:"_id"`
+	Username string             `bson:"username"`
+	Session  string             `bson:"session"`
 }
 
 type User struct {
@@ -97,30 +97,30 @@ func (s *server) Login(
 	if err != nil || result.Username == "" {
 		return nil, status.Error(codes.Unauthenticated, "invalid username or password")
 	}
-	session_id, err := GenerateRandomString(64)
+	session, err := GenerateRandomString(64)
 	if err != nil {
 		return nil, err
 	}
 	_, err = db.Database("user_service").Collection("sessions").InsertOne(
 		ctx,
-		bson.D{{Key: "username", Value: username}, {Key: "session_id", Value: session_id}},
+		bson.D{{Key: "username", Value: username}, {Key: "session", Value: session}},
 		nil,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return &service.LoginResponse{SessionId: session_id}, nil
+	return &service.LoginResponse{Session: session}, nil
 }
 
 func (s *server) SessionCheck(
 	ctx context.Context,
 	request *service.SessionCheckRequest,
 ) (*service.SessionCheckResponse, error) {
-	session_id := request.GetSessionId()
+	session := request.GetSession()
 	var result Session
 	err := db.Database("user_service").Collection("sessions").FindOne(
 		ctx,
-		bson.D{{Key: "session_id", Value: session_id}},
+		bson.D{{Key: "session", Value: session}},
 		nil,
 	).Decode(&result)
 	if err != nil {
@@ -160,7 +160,7 @@ func baza() {
 	_, err = db.Database("user_service").Collection("sessions").Indexes().CreateOne(
 		context.Background(),
 		mongo.IndexModel{
-			Keys:    bson.D{{Key: "session_id", Value: 1}},
+			Keys:    bson.D{{Key: "session", Value: 1}},
 			Options: options.Index().SetUnique(true),
 		},
 		nil,

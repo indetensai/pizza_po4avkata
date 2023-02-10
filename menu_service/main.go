@@ -10,6 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -21,6 +22,14 @@ var db *mongo.Client
 
 type server struct {
 	service.UnimplementedMenuServiceServer
+}
+
+type MenuPizza struct {
+	ID          primitive.ObjectID `bson:"_id"`
+	Name        string             `bson:"name"`
+	Description string             `bson:"description"`
+	Ingredients []string           `bson:"ingredients"`
+	Prices      map[string]int64   `bson:"prices"`
 }
 
 func (s *server) CreatePizza(
@@ -58,10 +67,19 @@ func (s *server) GetMenu(
 	if err != nil {
 		return nil, err
 	}
-	var result []*service.Pizza
-	err = source.All(ctx, &result)
+	var preresult []MenuPizza
+	err = source.All(ctx, &preresult)
 	if err != nil {
 		return nil, err
+	}
+	var result []*service.MenuPizza
+	for _, pizza := range preresult {
+		result = append(result, &service.MenuPizza{
+			Name:        pizza.Name,
+			Description: pizza.Description,
+			Ingredients: pizza.Ingredients,
+			Prices:      pizza.Prices,
+			Id:          pizza.ID.Hex()})
 	}
 	return &service.MenuResponse{Menu: result}, nil
 }

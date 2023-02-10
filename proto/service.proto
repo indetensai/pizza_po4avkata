@@ -17,7 +17,7 @@ message LoginRequest{
 }
 
 message LoginResponse{
-    string session_id = 1;
+    string session = 1;
 }
 
 
@@ -28,12 +28,21 @@ message Pizza{
     map<string, int64> prices = 4;
 }
 
+message MenuPizza{
+    string name = 1;
+    string description = 2;
+    repeated string ingredients = 3;
+    map<string, int64> prices = 4;
+    string id = 5;
+}
+
 message MenuRequest{
 
 }
 
 message MenuResponse{
-    repeated Pizza menu = 1;
+    repeated MenuPizza menu = 1;
+    
 }
 
 message PizzaCreatingRequest{
@@ -44,13 +53,18 @@ message PizzaCreatingResponse{
 
 }
 
+message OrderRequestPizza{
+    string pizza_id = 1;
+    string size = 2;
+}
+
 message OrderRequest{
-    repeated Pizza content = 1;
-    string session_id = 2;
+    repeated OrderRequestPizza content = 1;
+    string session = 2;
 }
 
 message OrderResponse{
-
+    string price = 1;
 }
 
 message GetOrdersRequest{
@@ -61,6 +75,8 @@ message PizzaOrder{
     Pizza content = 1;
     string status = 2;
     string time = 3;
+    string username = 4;
+    string bill = 5;
 }
 
 message GetOrdersResponse{
@@ -69,7 +85,7 @@ message GetOrdersResponse{
 }
 
 message SessionCheckRequest{
-    string session_id = 1;
+    string session = 1;
 }
 
 message SessionCheckResponse{
