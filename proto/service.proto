@@ -64,7 +64,7 @@ message OrderRequest{
 }
 
 message OrderResponse{
-    string price = 1;
+    string bill = 1;
 }
 
 message GetOrdersRequest{
