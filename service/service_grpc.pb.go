@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type UserServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	SessionCheck(ctx context.Context, in *SessionCheckRequest, opts ...grpc.CallOption) (*SessionCheckResponse, error)
 }
 
 type userServiceClient struct {
@@ -52,12 +53,22 @@ func (c *userServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 	return out, nil
 }
 
+func (c *userServiceClient) SessionCheck(ctx context.Context, in *SessionCheckRequest, opts ...grpc.CallOption) (*SessionCheckResponse, error) {
+	out := new(SessionCheckResponse)
+	err := c.cc.Invoke(ctx, "/UserService/SessionCheck", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	SessionCheck(context.Context, *SessionCheckRequest) (*SessionCheckResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedUserServiceServer) Register(context.Context, *RegisterRequest
 }
 func (UnimplementedUserServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedUserServiceServer) SessionCheck(context.Context, *SessionCheckRequest) (*SessionCheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SessionCheck not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -120,6 +134,24 @@ func _UserService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_SessionCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionCheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SessionCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UserService/SessionCheck",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SessionCheck(ctx, req.(*SessionCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _UserService_Login_Handler,
+		},
+		{
+			MethodName: "SessionCheck",
+			Handler:    _UserService_SessionCheck_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -256,6 +292,128 @@ var MenuService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreatePizza",
 			Handler:    _MenuService_CreatePizza_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "service.proto",
+}
+
+// OrderServiceClient is the client API for OrderService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type OrderServiceClient interface {
+	Order(ctx context.Context, in *OrderRequest, opts ...grpc.CallOption) (*OrderResponse, error)
+	GetOrders(ctx context.Context, in *GetOrdersRequest, opts ...grpc.CallOption) (*GetOrdersResponse, error)
+}
+
+type orderServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewOrderServiceClient(cc grpc.ClientConnInterface) OrderServiceClient {
+	return &orderServiceClient{cc}
+}
+
+func (c *orderServiceClient) Order(ctx context.Context, in *OrderRequest, opts ...grpc.CallOption) (*OrderResponse, error) {
+	out := new(OrderResponse)
+	err := c.cc.Invoke(ctx, "/OrderService/Order", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderServiceClient) GetOrders(ctx context.Context, in *GetOrdersRequest, opts ...grpc.CallOption) (*GetOrdersResponse, error) {
+	out := new(GetOrdersResponse)
+	err := c.cc.Invoke(ctx, "/OrderService/GetOrders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// OrderServiceServer is the server API for OrderService service.
+// All implementations must embed UnimplementedOrderServiceServer
+// for forward compatibility
+type OrderServiceServer interface {
+	Order(context.Context, *OrderRequest) (*OrderResponse, error)
+	GetOrders(context.Context, *GetOrdersRequest) (*GetOrdersResponse, error)
+	mustEmbedUnimplementedOrderServiceServer()
+}
+
+// UnimplementedOrderServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedOrderServiceServer struct {
+}
+
+func (UnimplementedOrderServiceServer) Order(context.Context, *OrderRequest) (*OrderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Order not implemented")
+}
+func (UnimplementedOrderServiceServer) GetOrders(context.Context, *GetOrdersRequest) (*GetOrdersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOrders not implemented")
+}
+func (UnimplementedOrderServiceServer) mustEmbedUnimplementedOrderServiceServer() {}
+
+// UnsafeOrderServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to OrderServiceServer will
+// result in compilation errors.
+type UnsafeOrderServiceServer interface {
+	mustEmbedUnimplementedOrderServiceServer()
+}
+
+func RegisterOrderServiceServer(s grpc.ServiceRegistrar, srv OrderServiceServer) {
+	s.RegisterService(&OrderService_ServiceDesc, srv)
+}
+
+func _OrderService_Order_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServiceServer).Order(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/OrderService/Order",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServiceServer).Order(ctx, req.(*OrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OrderService_GetOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrdersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServiceServer).GetOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/OrderService/GetOrders",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServiceServer).GetOrders(ctx, req.(*GetOrdersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// OrderService_ServiceDesc is the grpc.ServiceDesc for OrderService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var OrderService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "OrderService",
+	HandlerType: (*OrderServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Order",
+			Handler:    _OrderService_Order_Handler,
+		},
+		{
+			MethodName: "GetOrders",
+			Handler:    _OrderService_GetOrders_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

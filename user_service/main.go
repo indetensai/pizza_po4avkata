@@ -30,6 +30,12 @@ type server struct {
 	service.UnimplementedUserServiceServer
 }
 
+type Session struct {
+	ID        primitive.ObjectID `bson:"_id"`
+	Username  string             `bson:"username"`
+	SessionId string             `bson:"session_id"`
+}
+
 type User struct {
 	ID       primitive.ObjectID `bson:"_id"`
 	Username string             `bson:"username"`
@@ -103,7 +109,25 @@ func (s *server) Login(
 	if err != nil {
 		return nil, err
 	}
-	return &service.LoginResponse{Session: session_id}, nil
+	return &service.LoginResponse{SessionId: session_id}, nil
+}
+
+func (s *server) SessionCheck(
+	ctx context.Context,
+	request *service.SessionCheckRequest,
+) (*service.SessionCheckResponse, error) {
+	session_id := request.GetSessionId()
+	var result Session
+	err := db.Database("user_service").Collection("sessions").FindOne(
+		ctx,
+		bson.D{{Key: "session_id", Value: session_id}},
+		nil,
+	).Decode(&result)
+	if err != nil {
+		return nil, err
+		//return nil, status.Error(codes.Unauthenticated, "user unauthenticated")
+	}
+	return &service.SessionCheckResponse{Username: result.Username}, nil
 }
 
 func baza() {

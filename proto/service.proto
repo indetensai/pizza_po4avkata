@@ -17,7 +17,7 @@ message LoginRequest{
 }
 
 message LoginResponse{
-    string session = 1;
+    string session_id = 1;
 }
 
 
@@ -44,12 +44,50 @@ message PizzaCreatingResponse{
 
 }
 
+message OrderRequest{
+    repeated Pizza content = 1;
+    string session_id = 2;
+}
+
+message OrderResponse{
+
+}
+
+message GetOrdersRequest{
+
+}
+
+message PizzaOrder{
+    Pizza content = 1;
+    string status = 2;
+    string time = 3;
+}
+
+message GetOrdersResponse{
+    repeated PizzaOrder list = 1;
+    
+}
+
+message SessionCheckRequest{
+    string session_id = 1;
+}
+
+message SessionCheckResponse{
+    string username = 1;
+}
+
 service UserService{
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
+    rpc SessionCheck(SessionCheckRequest) returns (SessionCheckResponse);
 }
 
 service MenuService{
     rpc GetMenu(MenuRequest) returns (MenuResponse);
     rpc CreatePizza(PizzaCreatingRequest) returns (PizzaCreatingResponse);
+}
+
+service OrderService{
+    rpc Order(OrderRequest) returns (OrderResponse);
+    rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse);
 }

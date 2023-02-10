@@ -44,7 +44,7 @@ func login_handler(c *fiber.Ctx) error {
 		}
 		return err
 	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"session_id": session_id.Session})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"session_id": session_id.SessionId})
 }
 
 func get_menu_handler(c *fiber.Ctx) error {
