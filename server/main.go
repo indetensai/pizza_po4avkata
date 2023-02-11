@@ -79,12 +79,21 @@ func order_handler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"total bill": order.Bill})
 }
 
+func getting_orders_handler(c *fiber.Ctx) error {
+	orders, err := order_service.GetOrders(c.Context(), &service.GetOrdersRequest{})
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"orders": orders})
+}
+
 func main() {
 	app := fiber.New()
 	app.Post("/user/register", register_handler)
 	app.Post("/user/login", login_handler)
 	app.Get("/menu", menu_handler)
 	app.Post("/order", order_handler)
+	app.Get("/orders", getting_orders_handler)
 	conn, err := grpc.Dial("localhost:443", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
