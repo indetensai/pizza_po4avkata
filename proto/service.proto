@@ -64,7 +64,7 @@ message OrderRequest{
 }
 
 message OrderResponse{
-    string bill = 1;
+    int64 bill = 1;
 }
 
 message GetOrdersRequest{
@@ -72,11 +72,12 @@ message GetOrdersRequest{
 }
 
 message PizzaOrder{
-    Pizza content = 1;
+    repeated OrderRequestPizza content = 1;
     string status = 2;
     string time = 3;
     string username = 4;
-    string bill = 5;
+    int64 bill = 5;
+    string id =6;
 }
 
 message GetOrdersResponse{

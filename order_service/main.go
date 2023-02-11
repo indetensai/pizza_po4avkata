@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"pizza/service"
-	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -25,6 +24,15 @@ var user_service service.UserServiceClient
 
 type server struct {
 	service.UnimplementedOrderServiceServer
+}
+
+type Getorder struct {
+	ID       primitive.ObjectID           `bson:"_id"`
+	Content  []*service.OrderRequestPizza `bson:"content"`
+	Status   string                       `bson:"status"`
+	Time     string                       `bson:"time"`
+	Username string                       `bson:"username"`
+	Bill     int64                        `bson:"bill"`
 }
 
 func (s *server) Order(
@@ -71,7 +79,38 @@ func (s *server) Order(
 	if err != nil {
 		return nil, err
 	}
-	return &service.OrderResponse{Bill: strconv.Itoa(int(bill))}, nil
+	return &service.OrderResponse{Bill: bill}, nil
+}
+
+func (s *server) GetOrders(
+	ctx context.Context,
+	request *service.GetOrdersRequest,
+) (*service.GetOrdersResponse, error) {
+	opts := options.Find().SetSort(bson.D{{Key: "time", Value: 1}})
+	source, err := db.Database("order_service").Collection("orders").Find(
+		ctx,
+		bson.D{{}},
+		opts,
+	)
+	if err != nil {
+		return nil, err
+	}
+	var preresult []Getorder
+	err = source.All(ctx, &preresult)
+	if err != nil {
+		return nil, err
+	}
+	var result []*service.PizzaOrder
+	for _, pizza := range preresult {
+		result = append(result, &service.PizzaOrder{
+			Content:  pizza.Content,
+			Status:   pizza.Status,
+			Time:     pizza.Time,
+			Username: pizza.Username,
+			Bill:     pizza.Bill,
+			Id:       pizza.ID.Hex()})
+	}
+	return &service.GetOrdersResponse{List: result}, nil
 }
 
 func baza() {
