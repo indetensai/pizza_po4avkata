@@ -1,0 +1,64 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: server.dockerfile
+    ports:
+      - '8080:8080'
+    networks:
+      - pizza_net
+    environment:
+      USER_SERVICE_ADDRESS: 'user:443'
+      MENU_SERVICE_ADDRESS: 'menu:50001'
+      ORDER_SERVICE_ADDRESS: 'order:50000'
+      SERVER_LISTENER_PORT: '8080'
+    depends_on:
+      - user
+      - menu
+      - order
+
+  menu:
+    build: 
+      context: .
+      dockerfile: menu_service.dockerfile
+    environment:
+      USER_SERVICE_ADDRESS: 'user:443'
+      MENU_LISTENER_PORT: '50001'
+    expose:
+      - '50001'
+    networks:
+      - pizza_net
+    depends_on:
+      - user
+    
+  order:
+    build: 
+      context: .
+      dockerfile: order_service.dockerfile
+    expose:
+      - '50000'
+    networks:
+      - pizza_net
+    environment:
+      USER_SERVICE_ADDRESS: 'user:443'
+      ORDER_LISTENER_PORT: '50000'
+    depends_on: 
+      - user
+  
+  user:
+    build: 
+      context: .
+      dockerfile: user_service.dockerfile
+    expose:
+      - '443'
+    networks:
+      - pizza_net
+    environment:
+      USER_LISTENER_PORT: '443'
+
+networks:
+  pizza_net:
+    driver: bridge
+    

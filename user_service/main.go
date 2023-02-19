@@ -175,7 +175,7 @@ func main() {
 	a := (os.Getenv("USER_SERVICE_DATABASE"))
 	fmt.Println(a)
 	baza()
-	ln, err := net.Listen("tcp", ":443")
+	ln, err := net.Listen("tcp", ":"+os.Getenv("USER_LISTENER_PORT"))
 	if err != nil {
 		log.Fatal(err)
 	}

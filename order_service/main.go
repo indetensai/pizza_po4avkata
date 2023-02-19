@@ -135,14 +135,14 @@ func baza() {
 func main() {
 	godotenv.Load()
 	baza()
-	ln, err := net.Listen("tcp", ":50000")
+	ln, err := net.Listen("tcp", ":"+os.Getenv("ORDER_LISTENER_PORT"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	srv := grpc.NewServer()
 	service.RegisterOrderServiceServer(srv, &server{})
 	reflection.Register(srv)
-	conn, err := grpc.Dial("localhost:443", grpc.WithInsecure())
+	conn, err := grpc.Dial(os.Getenv("USER_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}

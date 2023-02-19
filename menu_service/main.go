@@ -106,7 +106,7 @@ func baza() {
 func main() {
 	godotenv.Load()
 	baza()
-	ln, err := net.Listen("tcp", ":50001")
+	ln, err := net.Listen("tcp", ":"+os.Getenv("MENU_LISTENER_PORT"))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"log"
+	"os"
 	"pizza/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -94,21 +95,21 @@ func main() {
 	app.Get("/menu", menu_handler)
 	app.Post("/order", order_handler)
 	app.Get("/orders", getting_orders_handler)
-	conn, err := grpc.Dial("localhost:443", grpc.WithInsecure())
+	conn, err := grpc.Dial(os.Getenv("USER_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}
 	user_service = service.NewUserServiceClient(conn)
-	connd, err := grpc.Dial("localhost:50001", grpc.WithInsecure())
+	connd, err := grpc.Dial(os.Getenv("MENU_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}
 	menu_service = service.NewMenuServiceClient(connd)
-	connrd, err := grpc.Dial("localhost:50000", grpc.WithInsecure())
+	connrd, err := grpc.Dial(os.Getenv("ORDER_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}
 	order_service = service.NewOrderServiceClient(connrd)
-	app.Listen(":8080")
+	app.Listen(":" + os.Getenv("SERVER_LISTENER_PORT"))
 
 }
