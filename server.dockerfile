@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:alpine AS builder
 WORKDIR /usr/src/app
 RUN apk update && apk add protoc \
     && go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28 \
@@ -12,5 +12,10 @@ RUN protoc --proto_path=./proto --go-grpc_out=. service.proto \
     && protoc --proto_path=./proto --go_out=. service.proto
 COPY server/*.go ./
 RUN go build -o ./server
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /usr/src/app
 EXPOSE 8080
+COPY --from=0 /usr/src/app/server ./
 CMD [ "./server" ]

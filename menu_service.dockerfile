@@ -13,5 +13,11 @@ RUN protoc --proto_path=./proto --go-grpc_out=. service.proto \
 COPY menu_service/*.go ./
 COPY menu_service/.env ./
 RUN go build -o ./menu
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /usr/src/app
+COPY menu_service/.env ./
+COPY --from=0 /usr/src/app/menu ./
 EXPOSE 50001
 CMD [ "./menu" ]
