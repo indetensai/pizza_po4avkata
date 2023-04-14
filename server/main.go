@@ -94,7 +94,8 @@ func main() {
 	app.Post("/user/login", login_handler)
 	app.Get("/menu", menu_handler)
 	app.Post("/order", order_handler)
-	app.Get("/orders", getting_orders_handler)
+	app.Get("admin/orders", getting_orders_handler)
+	app.Post("admin/pizza")
 	conn, err := grpc.Dial(os.Getenv("USER_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
